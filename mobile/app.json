@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "WildBound",
+    "slug": "wildbound",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0D0221"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.wildbound.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "WildBound needs your location to find WildMons near you!",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "WildBound needs your location to find WildMons near you!"
+      }
+    },
+    "android": {
+      "package": "com.wildbound.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0D0221"
+      },
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow WildBound to use your location to find WildMons near you!"
+        }
+      ]
+    ],
+    "scheme": "wildbound"
+  }
+}

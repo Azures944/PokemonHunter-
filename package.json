@@ -1,16 +1,22 @@
 {
-  "name": "wildbound",
+  "name": "wildbound-server",
   "version": "1.0.0",
-  "description": "WildBound - Open World Creature Hunting Game",
+  "description": "WildBound — Open World Creature Hunting Game Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "mobile": "cd mobile && expo start",
+    "mobile:android": "cd mobile && expo start --android",
+    "mobile:ios": "cd mobile && expo start --ios"
   },
   "dependencies": {
     "express": "^4.18.2",
     "socket.io": "^4.7.2",
     "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
