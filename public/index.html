@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#6C63FF" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="WildBound" />
+  <meta name="description" content="Catch and battle creatures in the real world!" />
+  <title>WildBound</title>
+
+  <!-- Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Game CSS -->
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<!-- Offline Banner -->
+<div id="offline-banner" class="offline-banner">📡 OFFLINE MODE - Local play active</div>
+
+<!-- Level Up Notification -->
+<div id="level-up-notification" class="level-up-notification">
+  <div class="level-up-title">LEVEL UP!</div>
+  <div class="level-up-level">2</div>
+</div>
+
+<!-- Team Select Overlay -->
+<div id="team-select-overlay" class="team-select-overlay">
+  <div class="team-select-title">Select Your Team</div>
+  <div class="team-select-sub">Choose up to 3 creatures to battle with</div>
+  <div class="selected-count">0/3 selected</div>
+  <div class="team-select-grid"></div>
+  <div class="team-select-actions">
+    <button class="btn-secondary" id="btn-cancel-team">Cancel</button>
+    <button class="btn-primary" id="btn-confirm-team">Battle!</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     LOADING SCREEN
+     ============================================================ -->
+<div id="screen-loading" class="screen active">
+  <div class="loading-logo">W</div>
+  <div style="font-size:28px;font-weight:800;letter-spacing:2px;background:linear-gradient(135deg,#A09AFF,#4ECDC4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">WILDBOUND</div>
+  <div class="loading-subtitle">Open World Creature Hunting</div>
+  <div class="loading-bar-container">
+    <div class="loading-bar"></div>
+  </div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading your adventure...</div>
+</div>
+
+<!-- ============================================================
+     INTRO SCREEN
+     ============================================================ -->
+<div id="screen-intro" class="screen">
+  <div class="intro-logo">WildBound</div>
+  <div class="intro-tagline">Catch. Battle. Conquer.</div>
+
+  <div id="intro-creature-preview" class="intro-creature-preview"></div>
+
+  <form id="intro-form" class="intro-form">
+    <label for="intro-name-input">Your Trainer Name</label>
+    <input
+      type="text"
+      id="intro-name-input"
+      placeholder="Enter your name..."
+      maxlength="20"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    />
+
+    <div class="tutorial-hint">
+      🗺️ <strong>How to play:</strong> Walk around to find creatures on the map. Get close to them, then swipe up on the LockOrb to catch them! Battle other trainers online or fight AI!
+    </div>
+
+    <button type="submit" class="btn-primary" style="margin-top:8px;">
+      ⚡ Start Adventure
+    </button>
+  </form>
+</div>
+
+<!-- ============================================================
+     MAP SCREEN
+     ============================================================ -->
+<div id="screen-map" class="screen">
+  <!-- Leaflet map -->
+  <div id="map"></div>
+
+  <!-- Status Bar -->
+  <div class="map-status-bar">
+    <div class="map-player-info">
+      <div class="map-avatar">T</div>
+      <div class="map-player-details">
+        <div id="player-name-display">Trainer</div>
+        <div id="level-display">Level 1</div>
+      </div>
+    </div>
+    <div class="online-status">
+      <div class="online-indicator offline" id="online-dot"></div>
+      <span id="online-status">Offline</span>
+    </div>
+  </div>
+
+  <!-- Map Controls -->
+  <div class="map-controls">
+    <button class="btn-icon" id="btn-locate" title="Center on me">📍</button>
+  </div>
+
+  <!-- Creature Counter -->
+  <div id="creature-counter">
+    <span class="counter-icon">🌐</span>
+    <span id="creature-count-num">0</span> nearby
+  </div>
+
+  <!-- Encounter Prompt (shows when near a creature) -->
+  <div id="encounter-prompt" class="encounter-prompt">
+    <div class="encounter-prompt-creature"></div>
+    <div class="encounter-prompt-name">Embrix</div>
+    <div class="encounter-prompt-hint">Tap to encounter!</div>
+    <button class="encounter-prompt-btn">Catch!</button>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container"></div>
+</div>
+
+<!-- ============================================================
+     ENCOUNTER SCREEN
+     ============================================================ -->
+<div id="screen-encounter" class="screen">
+  <!-- Animated background -->
+  <div class="encounter-bg">
+    <div class="encounter-bg-particles"></div>
+  </div>
+
+  <!-- Header -->
+  <div class="encounter-header">
+    <button class="btn-icon" onclick="showScreen('map')">←</button>
+    <h2>Wild Encounter!</h2>
+    <span id="encounter-type-badge" class="type-badge flame">Flame</span>
+  </div>
+
+  <!-- Creature Display -->
+  <div class="encounter-creature-container">
+    <div id="encounter-creature-svg" class="encounter-creature-display"></div>
+  </div>
+
+  <!-- Creature Info -->
+  <div class="encounter-info">
+    <h2 id="encounter-creature-name">Embrix</h2>
+    <div id="encounter-rarity" class="encounter-rarity rarity-common">Common</div>
+    <p id="encounter-description" class="encounter-description">A fiery fox spirit whose tail blazes with ancestral flame energy.</p>
+  </div>
+
+  <!-- Catch Canvas -->
+  <div class="catch-canvas-container">
+    <canvas id="catch-canvas"></canvas>
+    <div class="orb-hint">↑ Swipe up to throw LockOrb!</div>
+    <div id="balls-remaining">⚾ 30 LockOrbs</div>
+    <div id="catch-result"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     COLLECTION SCREEN
+     ============================================================ -->
+<div id="screen-collection" class="screen">
+  <!-- Header -->
+  <div class="collection-header">
+    <h2>My Pack</h2>
+    <div class="collection-count">0 Creatures</div>
+  </div>
+
+  <!-- Type Filters -->
+  <div class="type-filters">
+    <button class="filter-btn active" data-type="All">All</button>
+    <button class="filter-btn" data-type="Flame">🔥 Flame</button>
+    <button class="filter-btn" data-type="Wave">🌊 Wave</button>
+    <button class="filter-btn" data-type="Leaf">🍃 Leaf</button>
+    <button class="filter-btn" data-type="Storm">⚡ Storm</button>
+    <button class="filter-btn" data-type="Frost">❄️ Frost</button>
+    <button class="filter-btn" data-type="Shadow">🌑 Shadow</button>
+    <button class="filter-btn" data-type="Light">✨ Light</button>
+    <button class="filter-btn" data-type="Stone">🪨 Stone</button>
+    <button class="filter-btn" data-type="Wind">💨 Wind</button>
+    <button class="filter-btn" data-type="Cosmic">🌌 Cosmic</button>
+  </div>
+
+  <!-- Collection Grid -->
+  <div id="collection-grid">
+    <div class="empty-collection">
+      <div class="empty-icon">🎒</div>
+      <h3>Your pack is empty!</h3>
+      <p>Explore the map and catch creatures to fill your collection.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     BATTLE SCREEN
+     ============================================================ -->
+<div id="screen-battle" class="screen">
+  <!-- Header -->
+  <div class="battle-header">
+    <h2>⚔️ Battle</h2>
+  </div>
+
+  <!-- Mode Toggle -->
+  <div class="battle-mode-toggle">
+    <button class="battle-mode-btn active" id="mode-online">🌐 Online</button>
+    <button class="battle-mode-btn" id="mode-offline">🤖 vs AI</button>
+  </div>
+
+  <!-- Matchmaking Panel -->
+  <div id="battle-matchmaking" style="display:flex;">
+    <div class="battle-matchmaking-icon">⚔️</div>
+    <div class="battle-matchmaking-title">Ready to Battle?</div>
+    <div class="battle-matchmaking-sub">Challenge real trainers online or fight against AI opponents to earn XP and coins!</div>
+
+    <button class="btn-primary" id="btn-find-match">
+      🌐 Find Online Match
+    </button>
+    <button class="btn-secondary" id="btn-offline-battle" style="margin-top:-8px;">
+      🤖 Fight AI Battle
+    </button>
+
+    <div class="waiting-spinner">
+      <div class="loading-spinner"></div>
+      <div class="waiting-text">Searching...</div>
+      <button class="btn-secondary" id="btn-cancel-match" style="width:auto;padding:8px 24px;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Battle Arena (hidden until battle starts) -->
+  <div id="battle-arena" style="flex:1;flex-direction:column;overflow:hidden;">
+    <!-- Opponent Area -->
+    <div class="battle-opponent-area">
+      <div>
+        <div class="battle-creature-name" id="battle-opp-name">Opponent</div>
+        <div class="battle-info">
+          <div class="battle-hp-bar">
+            <div class="battle-hp-fill" id="battle-opp-hp-fill" style="width:100%"></div>
+          </div>
+          <div class="battle-hp-text" id="battle-opp-hp-text">100/100</div>
+        </div>
+      </div>
+      <div id="battle-opp-svg" class="battle-creature-display opponent" style="width:100px;height:100px;"></div>
+    </div>
+
+    <!-- Battle Log -->
+    <div class="battle-log" id="battle-log">Choose your move!</div>
+
+    <!-- Divider -->
+    <div class="battle-divider"></div>
+
+    <!-- Player Area -->
+    <div class="battle-player-area">
+      <div>
+        <div class="battle-creature-name" id="battle-my-name">My Creature</div>
+        <div class="battle-info">
+          <div class="battle-hp-bar">
+            <div class="battle-hp-fill" id="battle-my-hp-fill" style="width:100%"></div>
+          </div>
+          <div class="battle-hp-text" id="battle-my-hp-text">100/100</div>
+        </div>
+      </div>
+      <div id="battle-my-svg" class="battle-creature-display" style="width:100px;height:100px;"></div>
+    </div>
+
+    <!-- Moves Panel -->
+    <div class="moves-panel">
+      <button class="move-btn"><div class="move-btn-name">Attack 1</div></button>
+      <button class="move-btn"><div class="move-btn-name">Attack 2</div></button>
+      <button class="move-btn"><div class="move-btn-name">Attack 3</div></button>
+      <button class="move-btn"><div class="move-btn-name">Attack 4</div></button>
+    </div>
+
+    <!-- Battle Result Overlay -->
+    <div id="battle-result" class="battle-result-overlay">
+      <div class="battle-result-title">Victory!</div>
+      <div class="battle-result-rewards">+100 XP | +50 Coins</div>
+      <button class="btn-primary" id="btn-battle-continue" style="width:200px;">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PROFILE SCREEN
+     ============================================================ -->
+<div id="screen-profile" class="screen">
+  <div style="flex:1;overflow-y:auto;">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="profile-avatar" id="profile-avatar">T</div>
+      <div class="profile-name" id="profile-player-name">Trainer</div>
+      <div class="profile-level" id="profile-level">Level 1</div>
+      <div class="xp-bar-container">
+        <div class="xp-bar-label">
+          <span>XP</span>
+          <span id="profile-xp-label">0 / 100 XP</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-fill" id="profile-xp-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-body">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-value" id="stat-caught">0</div>
+          <div class="stat-label">Caught</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⚾</div>
+          <div class="stat-value" id="stat-balls">30</div>
+          <div class="stat-label">LockOrbs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="stat-coins">500</div>
+          <div class="stat-label">Coins</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-value" id="stat-wins">0</div>
+          <div class="stat-label">Wins</div>
+        </div>
+      </div>
+
+      <!-- Online Players -->
+      <div class="online-section">
+        <h3>NEARBY TRAINERS</h3>
+        <div id="online-players-list">
+          <div class="no-players-online">No other trainers nearby right now</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     BOTTOM NAVIGATION
+     ============================================================ -->
+<nav id="bottom-nav">
+  <button class="nav-btn active" data-screen="map">
+    <div class="nav-btn-icon">🗺️</div>
+    <div class="nav-btn-label">Map</div>
+  </button>
+  <button class="nav-btn" data-screen="collection">
+    <div class="nav-btn-icon">🎒</div>
+    <div class="nav-btn-label">Pack</div>
+  </button>
+  <button class="nav-btn" data-screen="battle">
+    <div class="nav-btn-icon">⚔️</div>
+    <div class="nav-btn-label">Battle</div>
+  </button>
+  <button class="nav-btn" data-screen="profile">
+    <div class="nav-btn-icon">👤</div>
+    <div class="nav-btn-label">Profile</div>
+  </button>
+</nav>
+
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
+
+<!-- Socket.io (connect to same host) -->
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- Game Data -->
+<script src="/creatures.js"></script>
+
+<!-- Game Logic -->
+<script src="/game.js"></script>
+
+<!-- Battle mode toggle -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var onlineBtn = document.getElementById('mode-online');
+    var offlineBtn = document.getElementById('mode-offline');
+    var findBtn = document.getElementById('btn-find-match');
+
+    if (onlineBtn && offlineBtn) {
+      onlineBtn.addEventListener('click', function() {
+        onlineBtn.classList.add('active');
+        offlineBtn.classList.remove('active');
+        if (findBtn) {
+          findBtn.textContent = '🌐 Find Online Match';
+          findBtn.onclick = function() {
+            if (typeof GameState !== 'undefined' && (!GameState.isOnline || !GameState.socket)) {
+              showToast('Offline - starting AI battle!', 'info');
+              offlineBattle();
+              return;
+            }
+            if (typeof GameState !== 'undefined' && GameState.player.creatures.length === 0) {
+              showToast('You need at least 1 creature to battle!', 'error');
+              return;
+            }
+            if (typeof selectBattleTeam === 'function') selectBattleTeam();
+          };
+        }
+      });
+
+      offlineBtn.addEventListener('click', function() {
+        offlineBtn.classList.add('active');
+        onlineBtn.classList.remove('active');
+        if (findBtn) {
+          findBtn.textContent = '🤖 Fight AI Battle';
+          findBtn.onclick = function() {
+            if (typeof offlineBattle === 'function') offlineBattle();
+          };
+        }
+      });
+    }
+
+    // Service worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(function(reg) {
+        console.log('[WildBound] Service Worker registered:', reg.scope);
+      }).catch(function(err) {
+        console.warn('[WildBound] Service Worker failed:', err);
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
