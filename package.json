@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "WildBound — Open World Creature Hunting Game",
   "scripts": {
-    "start": "npm start --prefix mobile",
-    "android": "npm run android --prefix mobile",
-    "ios": "npm run ios --prefix mobile",
-    "web": "npm run web --prefix mobile",
+    "start": "cd mobile && npx expo start",
+    "android": "cd mobile && npx expo start --android",
+    "ios": "cd mobile && npx expo start --ios",
+    "web": "cd mobile && npx expo start --web",
     "server": "node server.js",
-    "install:all": "npm install && npm install --prefix mobile --legacy-peer-deps"
+    "install:all": "npm install && cd mobile && npm install --legacy-peer-deps"
   },
   "dependencies": {
     "express": "^4.18.2",
