@@ -38,11 +38,6 @@
         }
       ]
     ],
-    "scheme": "wildbound",
-    "web": {
-      "bundler": "metro",
-      "output": "single",
-      "favicon": null
-    }
+    "scheme": "wildbound"
   }
 }
