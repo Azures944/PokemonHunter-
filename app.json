@@ -9,9 +9,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#0D0221"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.wildbound.app",
@@ -38,8 +36,7 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow WildBound to use your location to find WildMons near you!"
         }
-      ],
-      "expo-status-bar"
+      ]
     ],
     "scheme": "wildbound"
   }
