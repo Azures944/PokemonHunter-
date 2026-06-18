@@ -17,13 +17,13 @@ if %errorlevel% neq 0 (
 echo [OK] Node.js found
 echo.
 
-:: Install dependencies if node_modules missing
+:: Install dependencies if missing
 if not exist "node_modules\" (
     echo Installing dependencies... this takes ~1 minute the first time.
     echo.
     call npm install --legacy-peer-deps
     if %errorlevel% neq 0 (
-        echo ERROR: npm install failed. Check your internet connection.
+        echo ERROR: npm install failed.
         pause
         exit /b 1
     )
